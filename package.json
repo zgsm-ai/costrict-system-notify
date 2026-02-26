@@ -1,8 +1,8 @@
 {
   "name": "costrict-system-notify",
   "version": "1.0.0",
-  "description": "Windows 10 notification plugin for CoStrict - monitors human intervention events and displays desktop notifications",
-  "main": "dist/index.js",
+  "description": "Desktop notification plugin for CoStrict - monitors human intervention events and displays desktop notifications",
+  "main": "src/index.js",
   "type": "module",
   "license": "MIT",
   "keywords": [
@@ -10,27 +10,15 @@
     "costrict",
     "plugin",
     "notification",
-    "windows",
     "desktop"
   ],
   "author": "",
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "prepublishOnly": "npm run build"
-  },
+  "scripts": {},
   "dependencies": {
-    "@opencode-ai/plugin": "workspace:*",
-    "@opencode-ai/sdk": "workspace:*",
+    "@opencode-ai/plugin": "1.1.53",
     "node-notifier": "^10.0.1"
   },
-  "devDependencies": {
-    "@types/node-notifier": "^10.0.1",
-    "typescript": "catalog:",
-    "typescript-to-json-schema": "3.24.5"
-  },
   "peerDependencies": {
-    "@opencode-ai/plugin": "*",
-    "@opencode-ai/sdk": "*"
+    "@opencode-ai/plugin": "*"
   }
 }

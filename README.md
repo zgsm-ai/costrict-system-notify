@@ -1,18 +1,28 @@
 # CoStrict-System-Notify
 
-Windows 10 notification plugin for CoStrict.
+Desktop notification plugin for CoStrict.
 
 ## Features
 
-Monitors human intervention events and displays Windows 10 desktop notifications when:
+Monitors human intervention events and displays desktop notifications when:
 
-- Permission requests (tool execution requires user permission)
-- Question asked (AI needs user input)
-- Session idle (AI waiting for user input)
+- **Permission requests** - Tool execution requires user permission
+- **Question asked** - AI needs user input
+- **Session idle** - AI waiting for user input
+
+## Architecture
+
+The plugin implements a single hook:
+
+- **intervention.required hook** - Receives notification events and displays desktop notifications
+
+The filtering logic for idle events (main session vs sub-agent) is handled by the TDD plugin which triggers this hook. This plugin simply displays whatever notifications it receives.
 
 ## Installation
 
-1. Add plugin to CoStrict config:
+### Add to CoStrict Config
+
+Add to your `~/.config/costrict/config.json`:
 
 ```json
 {
@@ -20,27 +30,58 @@ Monitors human intervention events and displays Windows 10 desktop notifications
 }
 ```
 
-2. Install dependencies:
+### Build Plugin
 
 ```bash
+cd D:/DEV/CoStrict-System-Notify
 bun install
 ```
 
-## Architecture
+No build step required - pure JavaScript implementation.
 
-- Uses `notification.human.intervention` hook to receive events
-- Listens to `session.created` to track main sessions (not sub-agents)
-- Only notifies on idle events from main sessions (not from sub-agent completions)
+## Project Structure
 
-## Development
-
-```bash
-# Build
-bun run build
-
-# Development
-bun run dev
 ```
+CoStrict-System-Notify/
+├── src/
+│   └── index.js          # Main plugin code (JavaScript)
+├── package.json           # Dependencies and scripts
+├── .gitignore            # Git ignore rules
+├── LICENSE               # MIT License
+└── README.md             # This file
+```
+
+## Notification Details
+
+### Permission Notification
+
+- **Trigger**: `intervention.required` hook (type: "permission")
+- **Title**: "需要权限"
+- **Message**: Permission request message
+- **Sound**: ✅ Yes
+
+### Question Notification
+
+- **Trigger**: `intervention.required` hook (type: "question")
+- **Title**: "问题"
+- **Message**: First question text
+- **Sound**: ✅ Yes
+
+### Idle Notification
+
+- **Trigger**: `intervention.required` hook (type: "idle")
+- **Title**: "会话空闲"
+- **Message**: "AI 正在等待您的输入"
+- **Sound**: ❌ No
+- **Filtered**: Only for main sessions (handled by TDD plugin)
+
+## Technical Details
+
+- Uses `node-notifier` v10.0.1 for cross-platform desktop notifications
+- Implements `intervention.required` hook
+- Pure JavaScript - no build step required
+- Compatible with CoStrict plugin system
+- Smart filtering delegated to TDD plugin
 
 ## License
 
