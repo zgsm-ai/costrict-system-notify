@@ -12,30 +12,41 @@ Monitors human intervention events and sends notifications via multiple channels
 
 ## Notification Channels
 
-### System Notification (Default Enabled)
+### System Notification (Default Disabled)
 Desktop notifications using `node-notifier` - works across Windows, macOS, and Linux.
 
 ### Bark Notification
 Push notifications via Bark service (iOS/macOS).
+
+### WeChat Work Webhook (Default Disabled)
+Push notifications via WeChat Work (企微) webhook service.
 
 ## Configuration
 
 Configure notification channels using environment variables:
 
 ```bash
-# Enable/disable notification channels (default: system enabled)
-NOTIFY_ENABLE_SYSTEM=true    # System notification (default: true)
+# Enable/disable notification channels (default: all disabled)
+NOTIFY_ENABLE_SYSTEM=true    # System notification (default: false)
 NOTIFY_ENABLE_BARK=false     # Bark notification (default: false)
+NOTIFY_ENABLE_WECOM=false    # WeChat Work notification (default: false)
 
 # Bark configuration (required if Bark enabled)
 BARK_URL="https://api.day.app/YOUR_BARK_KEY"
+
+# WeChat Work configuration (required if WeChat Work enabled)
+# Option 1: Full webhook URL
+WECOM_WEBHOOK_URL="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY"
+
+# Option 2: Just the KEY (URL will use default base)
+WECOM_WEBHOOK_KEY="YOUR_KEY"
 ```
 
 ### Examples
 
-**Enable only system notifications** (default):
+**Enable system notifications**:
 ```bash
-# No configuration needed - system notifications are enabled by default
+export NOTIFY_ENABLE_SYSTEM=true
 ```
 
 **Enable Bark notifications**:
@@ -46,13 +57,30 @@ export BARK_URL="https://api.day.app/YOUR_BARK_KEY"
 
 **Enable multiple channels**:
 ```bash
+export NOTIFY_ENABLE_SYSTEM=true
 export NOTIFY_ENABLE_BARK=true
 export BARK_URL="https://api.day.app/YOUR_BARK_KEY"
 ```
 
-**Disable system notifications**:
+**Enable WeChat Work notifications** (with KEY only):
 ```bash
-export NOTIFY_ENABLE_SYSTEM=false
+export NOTIFY_ENABLE_WECOM=true
+export WECOM_WEBHOOK_KEY="YOUR_KEY"
+```
+
+**Enable WeChat Work notifications** (with full URL):
+```bash
+export NOTIFY_ENABLE_WECOM=true
+export WECOM_WEBHOOK_URL="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY"
+```
+
+**Enable all channels**:
+```bash
+export NOTIFY_ENABLE_SYSTEM=true
+export NOTIFY_ENABLE_BARK=true
+export NOTIFY_ENABLE_WECOM=true
+export BARK_URL="https://api.day.app/YOUR_BARK_KEY"
+export WECOM_WEBHOOK_KEY="YOUR_KEY"
 ```
 
 ## Architecture
@@ -130,7 +158,7 @@ costrict-notify/
 ## Technical Details
 
 - Uses `node-notifier` v10.0.1 for cross-platform desktop notifications
-- Supports multiple notification channels (System, Bark, WeChat)
+- Supports multiple notification channels (System, Bark, WeChat Work)
 - Configurable via environment variables
 - Implements `intervention.required` hook
 - Pure JavaScript - no build step required

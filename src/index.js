@@ -68,9 +68,46 @@ class BarkNotifier {
   }
 }
 
+class WecomNotifier {
+  constructor() {
+    const webhookUrl = process.env.WECOM_WEBHOOK_URL;
+    const webhookKey = process.env.WECOM_WEBHOOK_KEY;
+    
+    if (webhookUrl) {
+      this.webhookUrl = webhookUrl;
+    } else if (webhookKey) {
+      this.webhookUrl = `https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${webhookKey}`;
+    } else {
+      this.webhookUrl = null;
+    }
+  }
+
+  async notify(title, message, options = {}) {
+    if (!this.webhookUrl) {
+      throw new Error("Wecom webhook URL or KEY not configured");
+    }
+
+    const content = `${title}\n${message}`;
+    
+    await fetch(this.webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        msgtype: "text",
+        text: {
+          content: content,
+        },
+      }),
+    });
+  }
+}
+
 async function sendNotification(title, message, options = {}) {
-  const enableSystem = process.env.NOTIFY_ENABLE_SYSTEM !== "false";
+  const enableSystem = process.env.NOTIFY_ENABLE_SYSTEM === "true";
   const enableBark = process.env.NOTIFY_ENABLE_BARK === "true";
+  const enableWecom = process.env.NOTIFY_ENABLE_WECOM === "true";
 
   const results = [];
 
@@ -91,6 +128,16 @@ async function sendNotification(title, message, options = {}) {
       results.push({ type: "bark", success: true });
     } catch (error) {
       results.push({ type: "bark", success: false, error: error.message });
+    }
+  }
+
+  if (enableWecom) {
+    try {
+      const wecomNotifier = new WecomNotifier();
+      await wecomNotifier.notify(title, message, options);
+      results.push({ type: "wecom", success: true });
+    } catch (error) {
+      results.push({ type: "wecom", success: false, error: error.message });
     }
   }
 
