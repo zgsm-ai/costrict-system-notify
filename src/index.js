@@ -14,6 +14,88 @@ async function loadNotifier() {
   }
 }
 
+class SystemNotifier {
+  async notify(title, message, options = {}) {
+    const notifier = await loadNotifier();
+    if (!notifier) {
+      throw new Error("System notifier not available");
+    }
+
+    return new Promise((resolve, reject) => {
+      notifier.notify(
+        {
+          title,
+          message,
+          timeout: options.timeout || 5,
+          icon: "nothing",
+          appID: "CoStrict",
+          wait: false,
+        },
+        (err, response) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(response);
+          }
+        }
+      );
+    });
+  }
+}
+
+class BarkNotifier {
+  constructor() {
+    this.url = process.env.BARK_URL;
+  }
+
+  async notify(title, message, options = {}) {
+    if (!this.url) {
+      throw new Error("Bark URL not configured");
+    }
+
+    const axios = (await import("axios")).default;
+
+    let url = `${this.url}/${encodeURIComponent(title)}/${encodeURIComponent(message)}`;
+    const params = {};
+
+    if (options.timeout) {
+      params.timeout = options.timeout;
+    }
+
+    await axios.get(url, { params });
+  }
+}
+
+async function sendNotification(title, message, options = {}) {
+  const enableSystem = process.env.NOTIFY_ENABLE_SYSTEM !== "false";
+  const enableBark = process.env.NOTIFY_ENABLE_BARK === "true";
+
+  const results = [];
+
+  if (enableSystem) {
+    try {
+      const systemNotifier = new SystemNotifier();
+      await systemNotifier.notify(title, message, options);
+      results.push({ type: "system", success: true });
+    } catch (error) {
+      results.push({ type: "system", success: false, error: error.message });
+    }
+  }
+
+  if (enableBark) {
+    try {
+      const barkNotifier = new BarkNotifier();
+      await barkNotifier.notify(title, message, options);
+      results.push({ type: "bark", success: true });
+    } catch (error) {
+      results.push({ type: "bark", success: false, error: error.message });
+    }
+  }
+
+  const hasSuccess = results.some((r) => r.success);
+  return hasSuccess;
+}
+
 export async function CoStrictSystemNotifyPlugin(input) {
   if (notifierInstance) {
     notifierInstance = null;
@@ -25,7 +107,6 @@ export async function CoStrictSystemNotifyPlugin(input) {
 
       let title = "CoStrict";
       let message = "";
-      let sound = true;
       let timeout = 5;
 
       switch (type) {
@@ -46,27 +127,12 @@ export async function CoStrictSystemNotifyPlugin(input) {
         case "idle":
           title = "会话空闲";
           message = "AI 正在等待您的输入";
-          sound = false;
           break;
       }
 
-      const notifier = await loadNotifier();
-      if (!notifier) {
-        output.handled = false;
-        return;
-      }
-
       try {
-        notifier.notify({
-          title,
-          message,
-          sound,
-          timeout,
-          icon: "nothing",
-          appID: "CoStrict",
-          wait: false,
-        });
-        output.handled = true;
+        const success = await sendNotification(title, message, { timeout });
+        output.handled = success;
       } catch {
         output.handled = false;
       }
