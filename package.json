@@ -1,7 +1,7 @@
 {
   "name": "@costrict/notify",
-  "version": "1.0.2",
-  "description": "Multi-channel notification plugin for CoStrict - supports system desktop and Bark notifications",
+  "version": "1.0.3",
+  "description": "Multi-channel notification plugin for CoStrict - supports system desktop, Bark, and WeChat Work notifications",
   "main": "src/index.js",
   "type": "module",
   "license": "MIT",
@@ -11,7 +11,10 @@
     "plugin",
     "notification",
     "desktop",
-    "bark"
+    "bark",
+    "wecom",
+    "wechat",
+    "webhook"
   ],
   "author": "",
   "scripts": {
