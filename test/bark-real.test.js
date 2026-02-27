@@ -8,8 +8,6 @@ const srcPath = path.join(__dirname, "..", "src", "index.js");
 
 const moduleContent = await fs.readFile(srcPath, "utf-8");
 
-const axios = await import("axios");
-
 const mockProcess = {
   env: {
     BARK_URL: process.env.BARK_URL,
@@ -19,9 +17,6 @@ const mockProcess = {
 };
 
 const mockImport = async (module) => {
-  if (module === "axios") {
-    return axios;
-  }
   return {};
 };
 
@@ -84,9 +79,5 @@ try {
   
 } catch (error) {
   console.log("\n✗ Bark notification failed:", error.message);
-  if (error.response) {
-    console.log("  Response status:", error.response.status);
-    console.log("  Response data:", error.response.data);
-  }
   process.exit(1);
 }

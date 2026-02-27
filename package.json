@@ -1,6 +1,6 @@
 {
   "name": "@costrict/notify",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Multi-channel notification plugin for CoStrict - supports system desktop and Bark notifications",
   "main": "src/index.js",
   "type": "module",
@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@opencode-ai/plugin": "*",
-    "axios": "^1.13.5",
     "node-notifier": "^10.0.1"
   },
   "peerDependencies": {

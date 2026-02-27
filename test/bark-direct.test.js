@@ -1,5 +1,3 @@
-import axios from "axios";
-
 const barkUrl = process.env.BARK_URL;
 const title = "CoStrict 验证测试";
 const message = "Bark 通知功能正常工作";
@@ -16,19 +14,17 @@ if (!barkUrl) {
 }
 
 try {
-  const url = `${barkUrl}/${encodeURIComponent(title)}/${encodeURIComponent(message)}`;
+  let url = `${barkUrl}/${encodeURIComponent(title)}/${encodeURIComponent(message)}`;
+  url += '?timeout=5';
   console.log("Sending request to:", url);
   
-  const response = await axios.get(url, { params: { timeout: 5 } });
+  const response = await fetch(url);
   
   console.log("\nResponse status:", response.status);
-  console.log("Response data:", JSON.stringify(response.data, null, 2));
+  const data = await response.json();
+  console.log("Response data:", JSON.stringify(data, null, 2));
   console.log("\n✓ Bark notification sent successfully!");
 } catch (error) {
   console.log("\n✗ Bark notification failed:", error.message);
-  if (error.response) {
-    console.log("  Response status:", error.response.status);
-    console.log("  Response data:", JSON.stringify(error.response.data, null, 2));
-  }
   process.exit(1);
 }

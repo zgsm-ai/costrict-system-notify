@@ -23,13 +23,6 @@ const mockImport = async (module) => {
       },
     };
   }
-  if (module === "axios") {
-    return {
-      default: {
-        get: async () => ({ data: "success" }),
-      },
-    };
-  }
   return {};
 };
 

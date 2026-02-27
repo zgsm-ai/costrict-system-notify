@@ -53,8 +53,6 @@ class BarkNotifier {
       throw new Error("Bark URL not configured");
     }
 
-    const axios = (await import("axios")).default;
-
     let url = `${this.url}/${encodeURIComponent(title)}/${encodeURIComponent(message)}`;
     const params = {};
 
@@ -62,7 +60,11 @@ class BarkNotifier {
       params.timeout = options.timeout;
     }
 
-    await axios.get(url, { params });
+    if (Object.keys(params).length > 0) {
+      url += '?' + new URLSearchParams(params).toString();
+    }
+
+    await fetch(url);
   }
 }
 
