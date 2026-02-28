@@ -145,23 +145,65 @@ async function sendNotification(title, message, options = {}) {
   return hasSuccess;
 }
 
-export async function CoStrictSystemNotifyPlugin(input) {
+export async function CoStrictSystemNotifyPlugin(ctx) {
   if (notifierInstance) {
     notifierInstance = null;
   }
 
+  const { client } = ctx;
+
   return {
     "intervention.required": async (input, output) => {
-      const { type, data } = input;
+      const { type, data, sessionID } = input;
 
       let title = "CoStrict";
       let message = "";
       let timeout = 5;
 
+      let sessionTitle = "任务";
+      let userMessage = "";
+      let latestMessage = "";
+
+      if (sessionID && client?.session) {
+        try {
+          const session = await client.session.get({ path: { id: sessionID } });
+          if (session?.data?.title) {
+            sessionTitle = session.data.title.length > 50 ? session.data.title.slice(0, 50) + "..." : session.data.title;
+          }
+
+          const result = await client.session.messages({ path: { id: sessionID }, query: { limit: 10 } });
+          const data = result.data ?? [];
+          const lastUserMsg = data.findLast(m => m.info?.role === "user");
+          if (lastUserMsg?.parts) {
+            const textPart = lastUserMsg.parts.find(p => p.type === "text");
+            if (textPart?.text) {
+              userMessage = textPart.text.length > 100 ? textPart.text.slice(0, 100) + "..." : textPart.text;
+            }
+          }
+          const latestNonUserMsg = data.findLast(m => m.info?.role !== "user");
+          if (latestNonUserMsg?.parts) {
+            const textPart = latestNonUserMsg.parts.find(p => p.type === "text");
+            if (textPart?.text) {
+              latestMessage = textPart.text.length > 100 ? textPart.text.slice(0, 100) + "..." : textPart.text;
+            }
+          }
+        } catch (err) {
+          console.error("Failed to get session messages:", err);
+        }
+      }
+
+      let formattedMessage = "";
+
       switch (type) {
         case "permission":
           title = "需要权限";
-          message = data.message || "工具需要权限才能执行";
+          const permission = data.permission || "";
+          const pattern = Array.isArray(data.patterns) && data.patterns.length > 0 ? data.patterns[0] : "";
+          const permissionMessage = permission ? `[${permission}] ${pattern}` : (pattern || "工具需要权限才能执行");
+          formattedMessage = [
+            `会话标题：${sessionTitle}`,
+            `权限请求：${permissionMessage}`
+          ].join("\n");
           break;
 
         case "question":
@@ -170,17 +212,24 @@ export async function CoStrictSystemNotifyPlugin(input) {
             Array.isArray(data.questions) && data.questions.length > 0
               ? data.questions[0].question
               : "请回答问题";
-          message = firstQuestion;
+          formattedMessage = [
+            `会话标题：${sessionTitle}`,
+            `待回答问题：${firstQuestion}`
+          ].join("\n");
           break;
 
         case "idle":
           title = "会话空闲";
-          message = "AI 正在等待您的输入";
+          formattedMessage = [
+            `会话标题：${sessionTitle}`,
+            userMessage ? `用户上一条提问内容：${userMessage}` : "用户上一条提问内容：（无）",
+            latestMessage ? `最新一条消息：${latestMessage}` : "最新一条消息：（无）"
+          ].join("\n");
           break;
       }
 
       try {
-        const success = await sendNotification(title, message, { timeout });
+        const success = await sendNotification(title, formattedMessage, { timeout });
         output.handled = success;
       } catch {
         output.handled = false;
