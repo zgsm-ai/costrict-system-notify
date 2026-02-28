@@ -105,7 +105,7 @@ class WecomNotifier {
 }
 
 async function sendNotification(title, message, options = {}) {
-  const enableSystem = process.env.NOTIFY_ENABLE_SYSTEM === "true";
+  const enableSystem = process.env.NOTIFY_ENABLE_SYSTEM !== "false";
   const enableBark = process.env.NOTIFY_ENABLE_BARK === "true";
   const enableWecom = process.env.NOTIFY_ENABLE_WECOM === "true";
 

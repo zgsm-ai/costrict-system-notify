@@ -12,7 +12,7 @@ Monitors human intervention events and sends notifications via multiple channels
 
 ## Notification Channels
 
-### System Notification (Default Disabled)
+### System Notification (Default Enabled)
 Desktop notifications using `node-notifier` - works across Windows, macOS, and Linux.
 
 ### Bark Notification
@@ -26,8 +26,8 @@ Push notifications via WeChat Work (企微) webhook service.
 Configure notification channels using environment variables:
 
 ```bash
-# Enable/disable notification channels (default: all disabled)
-NOTIFY_ENABLE_SYSTEM=true    # System notification (default: false)
+# Enable/disable notification channels
+NOTIFY_ENABLE_SYSTEM=true    # System notification (default: true, set to false to disable)
 NOTIFY_ENABLE_BARK=false     # Bark notification (default: false)
 NOTIFY_ENABLE_WECOM=false    # WeChat Work notification (default: false)
 
