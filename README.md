@@ -27,7 +27,7 @@ Configure notification channels using environment variables:
 
 ```bash
 # Enable/disable notification channels
-NOTIFY_ENABLE_SYSTEM=true    # System notification (default: true, set to false to disable)
+NOTIFY_ENABLE_SYSTEM=false   # System notification (default: false, set to true to enable)
 NOTIFY_ENABLE_BARK=false     # Bark notification (default: false)
 NOTIFY_ENABLE_WECOM=false    # WeChat Work notification (default: false)
 
